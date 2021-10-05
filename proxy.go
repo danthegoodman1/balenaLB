@@ -21,6 +21,7 @@ var (
 )
 
 func ScanForUpstreams() {
+	fmt.Println("Scanning for devices...")
 	foundURLs := []*url.URL{}
 	for i := 0; i < 255; i++ {
 		// fmt.Println("checking", fmt.Sprintf("%s.%d", cidrPrefix, i))
