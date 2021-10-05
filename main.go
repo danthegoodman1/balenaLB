@@ -1,6 +1,6 @@
-package balenalb
+package main
 
 func main() {
 	ScanForUpstreams()
-	// StartServer()
+	StartServer()
 }
