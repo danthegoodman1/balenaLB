@@ -7,12 +7,14 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 var (
 	Server     *echo.Echo
-	urlList    []url.URL
+	urlList    []*url.URL
 	cidrPrefix = "192.168.1"
+	targets    []*middleware.ProxyTarget
 )
 
 func ScanForUpstreams() {
@@ -26,6 +28,11 @@ func ScanForUpstreams() {
 		if conn != nil {
 			fmt.Println("Connected to device", fmt.Sprintf("%s.%d", cidrPrefix, i))
 			conn.Close()
+			u, err := url.Parse(net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80"))
+			if err != nil {
+				panic(err)
+			}
+			urlList = append(urlList, u)
 		}
 		time.Sleep(time.Millisecond * 100)
 	}
@@ -36,5 +43,13 @@ func StartServer() {
 	Server = echo.New()
 	Server.HideBanner = true
 
-	Server.Start(":8080")
+	for _, i := range urlList {
+		targets = append(targets, &middleware.ProxyTarget{
+			URL: i,
+		})
+	}
+
+	Server.Use(middleware.Proxy(middleware.NewRoundRobinBalancer(targets)))
+
+	Server.Start(":80")
 }

@@ -3,3 +3,5 @@ services:
   load-balancer:
     privileged: true
     build: .
+    ports:
+      - "80:80"
