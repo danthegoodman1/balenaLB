@@ -25,13 +25,13 @@ func ScanForUpstreams() {
 	foundURLs := []*url.URL{}
 	for i := 0; i < 255; i++ {
 		// fmt.Println("checking", fmt.Sprintf("%s.%d", cidrPrefix, i))
-		conn, err := net.DialTimeout("tcp", net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80"), time.Millisecond*200)
+		conn, err := net.DialTimeout("tcp", net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80"), time.Millisecond*100)
 		if err != nil {
 			// fmt.Println("Failed to connect to", net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80"))
 			// fmt.Println(err)
 		}
 		if conn != nil {
-			// fmt.Println("Connected to device", fmt.Sprintf("%s.%d", cidrPrefix, i))
+			fmt.Println("Connected to device", fmt.Sprintf("%s.%d", cidrPrefix, i))
 			conn.Close()
 			u, err := url.Parse(fmt.Sprintf("http://%s", net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80")))
 			if err != nil {
@@ -39,7 +39,6 @@ func ScanForUpstreams() {
 			}
 			foundURLs = append(foundURLs, u)
 		}
-		time.Sleep(time.Millisecond * 100)
 	}
 
 	// Compare url lists to see what to add and what to drop
@@ -94,12 +93,15 @@ func StartServer() {
 
 	rrb = middleware.NewRoundRobinBalancer([]*middleware.ProxyTarget{}) // No targets
 	ScanForUpstreams()
+	StartScanTicker()
 	Server.Use(middleware.Proxy(rrb))
 
+	fmt.Println("Starting to serve proxy")
 	Server.Start(":80")
 }
 
-func StartScanTicke() {
+func StartScanTicker() {
+	fmt.Println("Starting scan ticker")
 	ticker = time.NewTicker(5 * time.Second)
 	done := make(chan bool)
 	go func() {
