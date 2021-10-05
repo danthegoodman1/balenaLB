@@ -28,7 +28,7 @@ func ScanForUpstreams() {
 		if conn != nil {
 			fmt.Println("Connected to device", fmt.Sprintf("%s.%d", cidrPrefix, i))
 			conn.Close()
-			u, err := url.Parse(net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80"))
+			u, err := url.Parse(fmt.Sprintf("http://%s", net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80")))
 			if err != nil {
 				panic(err)
 			}
