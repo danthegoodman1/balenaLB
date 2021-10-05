@@ -95,12 +95,13 @@ func ScanForUpstreams() {
 func StartServer() {
 	Server = echo.New()
 	Server.HideBanner = true
+	Server.Use(middleware.Logger())
 
 	rrb = middleware.NewRoundRobinBalancer([]*middleware.ProxyTarget{}) // No targets
 	ScanForUpstreams()
 	StartScanTicker()
 	Server.GET("/upstream", ListUpstreams)
-	Server.Use(middleware.Proxy(rrb))
+	Server.Group("/", middleware.Proxy(rrb)) // Hack to get / route working for proxy along with above route
 
 	fmt.Println("Starting to serve proxy")
 	Server.Start(":80")
