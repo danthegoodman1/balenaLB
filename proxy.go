@@ -99,6 +99,7 @@ func StartServer() {
 	rrb = middleware.NewRoundRobinBalancer([]*middleware.ProxyTarget{}) // No targets
 	ScanForUpstreams()
 	StartScanTicker()
+	Server.GET("/upstream", ListUpstreams)
 	Server.Use(middleware.Proxy(rrb))
 
 	fmt.Println("Starting to serve proxy")
@@ -120,4 +121,19 @@ func StartScanTicker() {
 			}
 		}
 	}()
+}
+
+func ListUpstreams(c echo.Context) error {
+	listString := ""
+	for _, i := range urlList {
+		listString += fmt.Sprintf("<li>%s</li>", i)
+	}
+	return c.HTML(200, fmt.Sprintf(`
+		<h1>Upstreams</h1>
+		<h2>Count: %d</h2>
+		<h2>List:</h2>
+		<ul>
+		%s
+		</ul>
+	`, len(urlList), listString))
 }
