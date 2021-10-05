@@ -23,7 +23,7 @@ var (
 func ScanForUpstreams() {
 	fmt.Println("Scanning for devices...")
 	foundURLs := []*url.URL{}
-	for i := 0; i < 255; i++ {
+	for i := 2; i < 255; i++ {
 		// fmt.Println("checking", fmt.Sprintf("%s.%d", cidrPrefix, i))
 		conn, err := net.DialTimeout("tcp", net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80"), time.Millisecond*100)
 		if err != nil {
@@ -46,7 +46,7 @@ func ScanForUpstreams() {
 	for _, i := range foundURLs {
 		found := false
 		for _, j := range urlList {
-			if i == j {
+			if i.String() == j.String() {
 				found = true
 			}
 		}
@@ -61,11 +61,11 @@ func ScanForUpstreams() {
 	for _, i := range urlList {
 		found := false
 		for _, j := range foundURLs {
-			if i == j {
+			if i.String() == j.String() {
 				found = true
 			}
 		}
-		// New upstream
+		// Dead upstream
 		if !found {
 			fmt.Println("Upstream died!", i.String())
 			deadURLs = append(deadURLs, i)
@@ -75,7 +75,8 @@ func ScanForUpstreams() {
 	// Add new
 	for _, i := range newURLs {
 		rrb.AddTarget(&middleware.ProxyTarget{
-			URL: i,
+			URL:  i,
+			Name: i.String(),
 		})
 	}
 	// Remove dead
@@ -85,6 +86,10 @@ func ScanForUpstreams() {
 
 	// Copy over
 	urlList = foundURLs
+	fmt.Println("Using list:")
+	for _, i := range urlList {
+		fmt.Println(i.String())
+	}
 }
 
 func StartServer() {
