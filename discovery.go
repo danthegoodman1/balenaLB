@@ -17,8 +17,13 @@ func DiscoverBalenaDevices() ([]*url.URL, error) {
 		panic("Api key not found, cannot contact balena api")
 	}
 
+	workerFleetID := os.Getenv("WORKER_FLEET_ID") // Done in balena panel
+	if workerFleetID == "" {
+		panic("Worker fleet id not found, cannot contact balena api")
+	}
+
 	client := http.Client{}
-	req, err := http.NewRequest("GET", "https://api.balena-cloud.com/v6/device?$filter=belongs_to__application%20eq%20'1869612'", nil)
+	req, err := http.NewRequest("GET", "https://api.balena-cloud.com/v6/device?$filter=belongs_to__application%20eq%20"+fmt.Sprintf("'%s'", workerFleetID), nil)
 	if err != nil {
 		return nil, err
 	}
