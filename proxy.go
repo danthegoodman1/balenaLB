@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net"
 	"net/url"
 	"time"
 
@@ -22,23 +21,9 @@ var (
 
 func ScanForUpstreams() {
 	fmt.Println("Scanning for devices...")
-	foundURLs := []*url.URL{}
-	for i := 2; i < 255; i++ {
-		// fmt.Println("checking", fmt.Sprintf("%s.%d", cidrPrefix, i))
-		conn, err := net.DialTimeout("tcp", net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80"), time.Millisecond*100)
-		if err != nil {
-			// fmt.Println("Failed to connect to", net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80"))
-			// fmt.Println(err)
-		}
-		if conn != nil {
-			fmt.Println("Connected to device", fmt.Sprintf("%s.%d", cidrPrefix, i))
-			conn.Close()
-			u, err := url.Parse(fmt.Sprintf("http://%s", net.JoinHostPort(fmt.Sprintf("%s.%d", cidrPrefix, i), "80")))
-			if err != nil {
-				panic(err)
-			}
-			foundURLs = append(foundURLs, u)
-		}
+	foundURLs, err := DiscoverBalenaDevices()
+	if err != nil {
+		panic(err)
 	}
 
 	// Compare url lists to see what to add and what to drop
