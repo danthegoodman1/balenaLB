@@ -50,13 +50,17 @@ func DiscoverBalenaDevices() ([]*url.URL, error) {
 	}
 	devices := []*url.URL{}
 	for _, device := range children {
-		fmt.Println(device.Data().(map[string]interface{})["ip_address"], "found in API")
-		u, err := url.Parse(fmt.Sprintf("http://%s:80", device.Data().(map[string]interface{})["ip_address"].(string)))
-		if err != nil {
-			log.Error("Error parsing IP from API:")
-			log.Error(err)
+		if device.Data().(map[string]interface{})["is_online"].(bool) &&
+			device.Data().(map[string]interface{})["is_connected_to_vpn"].(bool) &&
+			device.Data().(map[string]interface{})["api_heartbeat_state"].(string) == "online" {
+			fmt.Println(device.Data().(map[string]interface{})["ip_address"], "found in API")
+			u, err := url.Parse(fmt.Sprintf("http://%s:80", device.Data().(map[string]interface{})["ip_address"].(string)))
+			if err != nil {
+				log.Error("Error parsing IP from API:")
+				log.Error(err)
+			}
+			devices = append(devices, u)
 		}
-		devices = append(devices, u)
 	}
 	return devices, nil
 }
